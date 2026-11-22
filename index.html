@@ -130,6 +130,53 @@ footer{border-top:1px solid #29211e;color:#82766f;text-align:center;padding:24px
  const existing = getUser();
  if (existing) showDashboard(existing);
 })();
-</script>
+</script>const KEY = 'fireidont_demo_user_v1';
+ const getUser = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+ function setMode(next) {
+  mode = next;
+  $('loginTab').classList.toggle('active', mode === 'login');
+  $('registerTab').classList.toggle('active', mode === 'register');
+  $('nameField').classList.toggle('hidden', mode !== 'register');
+  $('authTitle').textContent = mode === 'login' ? 'Добро пожаловать' : 'Создать аккаунт';
+  $('authDesc').textContent = mode === 'login' ? 'Войди в свой демонстрационный профиль.' : 'Создай демонстрационный профиль FIRE I DON’T.';
+  $('submitAuth').textContent = mode === 'login' ? 'Войти' : 'Создать аккаунт';
+  $('switchText').innerHTML = mode === 'login' ? 'Нет аккаунта? <a id="switchMode">Зарегистрироваться</a>' : 'Уже есть аккаунт? <a id="switchMode">Войти</a>';
+  $('switchMode').onclick = () => setMode(mode === 'login' ? 'register' : 'login');
+  $('authError').textContent = '';
+ }
+ function showDashboard(user) {
+  $('authView').classList.add('hidden'); $('dashboard').classList.remove('hidden');
+  $('userName').textContent = user.name || user.email.split('@')[0];
+  $('profileName').textContent = user.name || 'Не указано';
+  $('profileEmail').textContent = user.email;
+ }
+ $('loginTab').onclick = () => setMode('login');
+ $('registerTab').onclick = () => setMode('register');
+ $('switchMode').onclick = () => setMode('register');
+ $('authForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const email = $('email').value.trim().toLowerCase();
+  const password = $('password').value;
+  const name = $('name').value.trim();
+  if (password.length < 6) { $('authError').textContent = 'Пароль должен содержать минимум 6 символов.'; return; }
+  if (mode === 'register') {
+   if (!name) { $('authError').textContent = 'Укажи имя пользователя.'; return; }
+   const user = {name, email, demoPassword: password};
+   localStorage.setItem(KEY, JSON.stringify(user));
+   showDashboard(user);
+  } else {
+   const user = getUser();
+   if (!user || user.email !== email || user.demoPassword !== password) {
+    $('authError').textContent = 'Демо-аккаунт не найден или данные не совпадают. Сначала зарегистрируйся в этом браузере.';
+    return;
+   }
+   showDashboard(user);
+  }
+ });
+ $('logout').onclick = () => { $('dashboard').classList.add('hidden'); $('authView').classList.remove('hidden'); $('authForm').reset(); setMode('login'); };
+ const existing = getUser();
+ if (existing) showDashboard(existing);
+})();
+  </script>
 </body>
 </html>
